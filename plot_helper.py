@@ -19,15 +19,15 @@ COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
 
 def set_paper_friendly_params():
     plt.style.use('seaborn-paper')
-    plt.rcParams['font.size'] = 16
-    plt.rcParams['axes.labelsize'] = 18
+    plt.rcParams['font.size'] = 24
+    plt.rcParams['axes.labelsize'] = 24
     plt.rcParams['axes.labelweight'] = 'bold'
-    plt.rcParams['axes.titlesize'] = 20
+    plt.rcParams['axes.titlesize'] = 15
     plt.rcParams['axes.linewidth'] = 1.25
     plt.rcParams['axes.titleweight'] = 'bold'
-    plt.rcParams['xtick.labelsize'] = 17
-    plt.rcParams['ytick.labelsize'] = 17
-    plt.rcParams['legend.fontsize'] = 12
+    plt.rcParams['xtick.labelsize'] = 20
+    plt.rcParams['ytick.labelsize'] = 20
+    plt.rcParams['legend.fontsize'] = 18
     plt.rcParams['figure.titlesize'] = 25
     plt.rcParams['lines.linewidth'] = 4.0
     plt.rcParams['lines.markersize'] = 7
@@ -40,10 +40,10 @@ def set_paper_friendly_params():
 
 
 def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extension='png', x_vals=None, 
-    legend_vals=None, vertical_line=None, vertical_lines_labels=None, 
+    legend_vals=None, vertical_line=None, 
     horizontal_lines=None, horizontal_lines_err=None, colors=None, linestyles=None,
     y_lims=None, root_dir='.', paper_friendly_plots=False, plot_inside=False, legend_location='best', savefig=True, figsize=(5,3), 
-    marker=False, results_subfolder_name='untitled', grid_spacing=None, y_err=None):
+    marker=False, results_subfolder_name='untitled', grid_spacing=None, y_err=None, legend_ncol=None):
     """
     Custom function to make a line plot.
     lines_y: list of lists or a 2D numpy array. Each list/row contains y_coordinates for a particular line.
@@ -109,7 +109,8 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
 
     if vertical_line is not None:
         for j in range(len(vertical_line)):
-            ax.axvline(x=vertical_line[j], c=COLORS[len(lines_y)+j] if colors is None else colors[len(lines_y)+j], linestyle='--', label=vertical_lines_labels[j] if vertical_lines_labels is not None else "")
+            ax.axvline(x=vertical_line[j], c=COLORS[len(lines_y)+j] if colors is None else colors[len(lines_y)+j], 
+                linestyle='--', label=legend_vals[len(lines_y)+j] if len(legend_vals) > len(lines_y)+j else "")
         ax.tick_params('x', which='minor', direction='in', pad=-12)
         ax.xaxis.set_ticks(vertical_line, minor=True)
         if isinstance(vertical_line[0], float):
@@ -120,7 +121,8 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
     
     if horizontal_lines is not None:
         for j in range(len(horizontal_lines)):
-            ax.axhline(y=horizontal_lines[j], c=COLORS[len(lines_y)+len(vertical_line)+j] if colors is None else colors[len(lines_y)+len(vertical_line)+j], linestyle='--')
+            ax.axhline(y=horizontal_lines[j], c=COLORS[len(lines_y)+len(vertical_line)+j] if colors is None else colors[len(lines_y)+len(vertical_line)+j], 
+                linestyle='--', label=legend_vals[len(lines_y)+len(vertical_line)+j] if len(legend_vals) > len(lines_y)+len(vertical_line)+j else "")
         if horizontal_lines_err is not None:
             for j in range(len(horizontal_lines_err)):
                 ax.fill_between(x_vals, horizontal_lines[j] - horizontal_lines_err[j], 
@@ -148,7 +150,7 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
     if legend_vals is not None and paper_friendly_plots and not plot_inside:
         fig_legend = plt.figure(figsize=(3, 3))
         handles, labels = ax.get_legend_handles_labels()
-        fig_legend.legend(handles, labels, 'center', ncol=1)
+        fig_legend.legend(handles, labels, 'center', ncol=1 if legend_ncol is None else legend_ncol)
         fig_legend.savefig("{}/{}/{}/{}/{}_legend.{}".format(root_dir, 
             RESULTS_FOLDER_NAME, results_subfolder_name, subfolder, 
             filename, extension), bbox_inches='tight')

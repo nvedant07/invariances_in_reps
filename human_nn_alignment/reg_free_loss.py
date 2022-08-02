@@ -1,3 +1,4 @@
+from requests import get
 from pytorch_lightning import utilities as pl_utils
 from pytorch_lightning.trainer.trainer import Trainer
 from pytorch_lightning.plugins import DDPPlugin
@@ -7,27 +8,23 @@ from pytorch_lightning.core.lightning import LightningModule
 import torch
 import pathlib, argparse
 try:
-    from training import NicerModelCheckpointing, LitProgressBar
+    from training import LitProgressBar
     import architectures as arch
     from attack.callbacks import AdvCallback
-    from attack.attack_module import Attacker
-    from attack.losses import LOSSES_MAPPING
-    from architectures.callbacks import LightningWrapper, AdvAttackWrapper, LinearEvalWrapper
     from architectures.inverted_rep_callback import InvertedRepWrapper
-    from architectures.inference import inference_with_features
     from datasets.data_modules import DATA_MODULES
     from datasets.dataset_metadata import DATASET_PARAMS
-    from self_supervised.simclr_datamodule import simclr_dm
-    from self_supervised.simclr_callback import SimCLRWrapper
     from human_nn_alignment.save_inverted_reps import save_tensor_images, get_classes_names
     from human_nn_alignment.transforms import compose, jitter, pad, random_scale, random_rotate
-    from human_nn_alignment.fft_image import rfft2d_freqs, fft_image
+    from human_nn_alignment.fft_image import fft_image
+    from human_nn_alignment.utils import initialize_seed, LOSSES_MAPPING, ADDITIONAL_DATAMODULES
 except:
     raise ValueError('Run as a module to trigger __init__.py, ie '
                      'run as python -m human_nn_alignment.reg_free_loss')
 from functools import partial
 
 parser = argparse.ArgumentParser(description='PyTorch Visual Explanation')
+parser.add_argument('--source_dataset', type=str, default=None)
 parser.add_argument('--dataset', type=str, default='cifar10')
 parser.add_argument('--model', type=str, default='resnet18')
 parser.add_argument('--batch_size', type=int, default=32)
@@ -39,7 +36,6 @@ parser.add_argument('--fft', type=bool, default=False)
 parser.add_argument('--step_size', type=float, default=1.)
 parser.add_argument('--seed_type', type=str, default='super-noise')
 parser.add_argument('--iters', type=int, default=None)
-args = parser.parse_args()
 
 
 TRANSFORMS = {'cifar10': [jitter(8),
@@ -52,22 +48,29 @@ TRANSFORMS = {'cifar10': [jitter(8),
                            random_rotate(list(range(-10, 11)) + 5 * [0]),
                            jitter(4)]}
 
-def initialize_seed(input_size, seed, fft):
-    ## if fft then seed must be initialzed in the fourier domain
-    ## the descent will happen in fourier domain
-    shape = (3,input_size,input_size) if not fft else \
-        (3,*rfft2d_freqs(input_size, input_size).shape,2)
-    if seed == 'super-noise':
-        return torch.randn(*shape)
-    if seed == 'white':
-        return torch.ones(*shape)
-    if seed == 'black':
-        return torch.zeros(*shape)
-    if seed == 'light-noise':
-        return torch.randn(*shape) * 0.01
+def get_datamodule(dataset):
+    if dataset in DATA_MODULES:
+        return DATA_MODULES[dataset]
+    else:
+        return ADDITIONAL_DATAMODULES[dataset]
 
-if __name__=='__main__':
+def get_dataset_kwargs(dataset, source_dataset):
+    dset_kwargs = {}
+    if 'random' in dataset:
+        mean, std = dataset.split('_')[-2:]
+        dset_kwargs['mean'], dset_kwargs['std'] = \
+            float(mean), float(std)
+        dset_kwargs['shape'] = (3, DATASET_PARAMS[source_dataset]['input_size'], 
+            DATASET_PARAMS[source_dataset]['input_size'])
+        dset_kwargs['num_samples'] = 100
+    return dset_kwargs
+        
+def main(args=None):
+    if args is None:
+        args = parser.parse_args()
+
     dataset = args.dataset
+    source_dataset = args.source_dataset if args.source_dataset else dataset
     model = args.model
     
     # checkpoint_path = '/NS/robustness_2/work/vnanda/adv-trades/checkpoints'\
@@ -91,22 +94,24 @@ if __name__=='__main__':
     devices = 1
     num_nodes = 1
     strategy = DDPPlugin(find_unused_parameters=True) if devices > 1 else None
+    data_path = '/NS/twitter_archive/work/vnanda/data'
 
-    data_path = '/NS/twitter_archive/work/vnanda/data' if dataset == 'imagenet' \
-        else '/NS/twitter_archive2/work/vnanda/data'
-
-    dm = DATA_MODULES[dataset](
+    dm = get_datamodule(dataset)(
         data_dir=data_path,
         val_frac=0.,
         subset=100,
-        batch_size=args.batch_size)
-    
+        transform_train=DATASET_PARAMS[source_dataset]['transform_train'],
+        transform_test=DATASET_PARAMS[source_dataset]['transform_test'],
+        batch_size=args.batch_size,
+        dataset_kwargs=get_dataset_kwargs(dataset, source_dataset))
+    dm.init_remaining_attrs(source_dataset)
+
     init_seed = initialize_seed(dm.input_size, args.seed_type, args.fft)
     m1 = arch.create_model(model, dataset, pretrained=pretrained,
                            checkpoint_path=checkpoint_path, seed=seed, 
                            callback=partial(InvertedRepWrapper, 
                                          seed=init_seed,
-                                         dataset_name=dataset))
+                                         dataset_name=source_dataset))
 
     custom_loss = LOSSES_MAPPING[inversion_loss]
     custom_loss._set_normalizer(m1.normalizer)
@@ -121,7 +126,7 @@ if __name__=='__main__':
         # using standard transforms from lucid 
         # (https://github.com/tensorflow/lucid/blob/master/lucid/optvis/transform.py)
         custom_loss._set_transforms(
-            compose(TRANSFORMS[dataset]))
+            compose(TRANSFORMS[source_dataset]))
     adv_callback = AdvCallback(constraint_train='unconstrained',
                                constraint_test='unconstrained',
                                constraint_val='unconstrained',
@@ -162,7 +167,7 @@ if __name__=='__main__':
             init_seed = custom_loss.fft_transform(init_seed.unsqueeze(0)).squeeze()
             ir = custom_loss.fft_transform(ir)
 
-        path = f'{pathlib.Path(__file__).parent.resolve()}/results/generated_images/{dataset}/'\
+        path = f'{pathlib.Path(__file__).parent.resolve()}/results/generated_images/{source_dataset}/'\
             f'{dataset}_{model}_{inversion_loss}'
         if args.trans_robust:
             path = f'{path}_transforms_{args.trans_robust}'
@@ -176,3 +181,6 @@ if __name__=='__main__':
         save_tensor_images(path, torch.arange(len(og)), args.seed_type, 
             ir, init_seed, og, labels, get_classes_names(dataset, data_path))
 
+
+if __name__=='__main__':
+    main()    

@@ -1,4 +1,4 @@
-import os
+import os, torch
 from torchvision.utils import save_image
 from torchvision import datasets
 try:
@@ -30,7 +30,7 @@ def get_classes_names(dataset, data_path):
         dset = datasets.CIFAR100(data_path, train=False)
         return dset.classes
     else:
-        raise ValueError(f'Dataset {dataset} not recognized')
+        return ['none']
 
 
 def save_tensor_images(path, img_indices, seed_name, results, seed, targets, labels, classes_name):
@@ -46,7 +46,7 @@ def save_tensor_images(path, img_indices, seed_name, results, seed, targets, lab
     # io.save_object(0, seed, 0, os.path.join(path, f'{seed_name}.pkl'))
 
     for idx, result, target, label in zip(img_indices, results, targets, labels):
-        img_name = f'{int(idx)}_{classes_name[label]}_seed_{seed_name}'
+        img_name = f'{int(idx)}_{classes_name[int(label)]}_seed_{seed_name}'
         img_target = f'{path_target}/{img_name}.png'
         img_result = f'{path_result}/{img_name}.png'
 
@@ -58,3 +58,19 @@ def save_tensor_images(path, img_indices, seed_name, results, seed, targets, lab
 
     print(f'=> Saved images in {path}')
 
+
+def save_tensor_reps(path, model2, seed_name, results, targets, rep_type):
+    path = os.path.abspath(path)
+    for _d in out.recursive_create_dir(path):
+        out.create_dir(_d)
+    path_target = os.path.join(path, 'target')
+    out.create_dir(path_target)
+    path_result = os.path.join(path, 'result')
+    out.create_dir(path_result)
+
+    img_target = f'{path_target}/{model2}_{rep_type}_{seed_name}.pth'
+    img_result = f'{path_result}/{model2}_{rep_type}_{seed_name}.pth'
+    torch.save(targets, img_target)
+    torch.save(results, img_result)
+
+    print(f'=> Saved representations in {path}')
