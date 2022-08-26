@@ -17,6 +17,14 @@ COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
           '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
           '#bcbd22', '#17becf']
 
+
+def get_wiki_link(figure_path, server_project_path, size=500):
+    """Returns the link to an image in wiki format"""
+    server_path = figure_path.replace('results', server_project_path)
+    wiki_link = out.web_attachment(server_path, size=size)
+    return wiki_link
+
+
 def set_paper_friendly_params():
     plt.style.use('seaborn-paper')
     plt.rcParams['font.size'] = 24

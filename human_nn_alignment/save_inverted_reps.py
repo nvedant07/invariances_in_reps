@@ -42,7 +42,8 @@ def save_tensor_images(path, img_indices, seed_name, results, seed, targets, lab
     path_result = os.path.join(path, 'result')
     out.create_dir(path_result)
 
-    save_image(seed, os.path.join(path, f'{seed_name}.png'))
+    if seed is not None:
+        save_image(seed, os.path.join(path, f'{seed_name}.png'))
     # io.save_object(0, seed, 0, os.path.join(path, f'{seed_name}.pkl'))
 
     for idx, result, target, label in zip(img_indices, results, targets, labels):
