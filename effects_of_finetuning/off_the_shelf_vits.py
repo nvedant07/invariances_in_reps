@@ -17,6 +17,7 @@ from timm.models.fx_features import GraphExtractNet
 try:
     import architectures as arch
     from architectures.callbacks import LightningWrapper
+    from architectures.utils import intermediate_layer_names
     from datasets.data_modules import DATA_MODULES
     import datasets.dataset_metadata as dsmd
 except:
@@ -34,6 +35,7 @@ parser.add_argument('--total_imgs', type=int, default=None)
 parser.add_argument('--base_checkpoint', type=str, default='')
 parser.add_argument('--finetuned_checkpoint', type=str, default='')
 parser.add_argument('--seed', type=int, default=1)
+parser.add_argument('--input_size', type=int, default=384)
 
 DATA_PATH = '/NS/twitter_archive/work/vnanda/data'
 ALT_DATA_PATH = '/NS/robustness_1/work/vnanda/data'
@@ -51,8 +53,8 @@ def main(args=None):
     dm = DATA_MODULES[args.eval_dataset](
         data_dir=DATA_PATH if 'imagenet' in args.eval_dataset else ALT_DATA_PATH,
         val_frac=0.,
-        transform_train=dsmd.TEST_TRANSFORMS_DEFAULT(384),
-        transform_test=dsmd.TEST_TRANSFORMS_DEFAULT(384),
+        transform_train=dsmd.TEST_TRANSFORMS_DEFAULT(args.input_size),
+        transform_test=dsmd.TEST_TRANSFORMS_DEFAULT(args.input_size),
         batch_size=args.batch_size)
     dm.init_remaining_attrs(args.eval_dataset)
 
@@ -63,8 +65,9 @@ def main(args=None):
                                             mean=torch.tensor([0,0,0]),
                                             std=torch.tensor([1,1,1]),
                                             inference_kwargs={'with_latent': True}))
-    m2 = arch.create_model(args.model, args.finetuning_dataset, pretrained=True,
+    m2 = arch.create_model(args.model, None, pretrained=True,
                            checkpoint_path=args.finetuned_checkpoint, seed=SEED, 
+                           num_classes=dsmd.DATASET_PARAMS[args.finetuning_dataset]['num_classes'],
                            callback=partial(LightningWrapper, 
                                             dataset_name=args.finetuning_dataset,
                                             mean=torch.tensor([0,0,0]),
@@ -89,24 +92,7 @@ def main(args=None):
                 model_info += f'{n}, {rep.shape if hasattr(rep, "shape") else rep}\n' 
         with open(f'{pathlib.Path(__file__).parent.resolve()}/results/{args.model}-layers.txt', 'w') as fp:
             fp.write(model_info)
-    filtered_nodes = []
-    if m2.model.__class__.__name__ == 'VisionTransformer':
-        block_number_to_layer = {}
-        for n in node_names:
-            if n.startswith('blocks.'):
-                current_block = int(n.split('blocks.')[1].split('.')[0])
-                if current_block not in block_number_to_layer:
-                    block_number_to_layer[current_block] = [n]
-                else:
-                    block_number_to_layer[current_block].append(n)
-            if n in ['fc_norm']:
-                filtered_nodes.append(n)
-        for block in sorted(block_number_to_layer.keys(), reverse=True):
-            filtered_nodes = [block_number_to_layer[block][-1]] + filtered_nodes
-    elif m2.model.__class__.__name__ == 'ResNetV2':
-        for n in node_names:
-            if n.endswith('.pool') or n.endswith('.add'):
-                filtered_nodes.append(n)
+    filtered_nodes = intermediate_layer_names(m2.model)
     model_info += '\n\nFiltered:\n'
     for n in filtered_nodes:
         model_info += f'{n}\n'

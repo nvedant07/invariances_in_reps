@@ -33,6 +33,7 @@ parser.add_argument('--total_imgs', type=int, default=None)
 parser.add_argument('--checkpoint', type=str, default='')
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--append_path', type=str, default='')
+parser.add_argument('--image_size', type=int, default=384)
 
 DATA_PATH = '/NS/twitter_archive/work/vnanda/data'
 ALT_DATA_PATH = '/NS/robustness_1/work/vnanda/data'
@@ -50,13 +51,15 @@ def main(args=None):
     dm = DATA_MODULES[args.eval_dataset](
         data_dir=DATA_PATH if 'imagenet' in args.eval_dataset else ALT_DATA_PATH,
         val_frac=0.,
-        transform_train=dsmd.TEST_TRANSFORMS_DEFAULT(384),
-        transform_test=dsmd.TEST_TRANSFORMS_DEFAULT(384),
+        transform_train=dsmd.TEST_TRANSFORMS_DEFAULT(args.image_size),
+        transform_test=dsmd.TEST_TRANSFORMS_DEFAULT(args.image_size),
         batch_size=args.batch_size)
     dm.init_remaining_attrs(args.eval_dataset)
 
-    m1 = arch.create_model(args.model, args.base_dataset, pretrained=True,
+    m1 = arch.create_model(args.model, None, pretrained=True,
                            checkpoint_path=args.checkpoint, seed=SEED, 
+                           num_classes=dsmd.DATASET_PARAMS[args.base_dataset if args.append_path == 'base' \
+                                                           else args.eval_dataset]['num_classes'],
                            callback=partial(LightningWrapper, 
                                             dataset_name=args.base_dataset,
                                             mean=torch.tensor([0,0,0]),

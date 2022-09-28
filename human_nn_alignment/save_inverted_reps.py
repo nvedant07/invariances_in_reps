@@ -9,6 +9,110 @@ except:
                      'run as python -m human_nn_alignment.reg_free_loss')
 
 
+flower_classes = ['pink primrose', 
+'hard-leaved pocket orchid', 
+'canterbury bells', 
+'sweet pea', 
+'english marigold', 
+'tiger lily', 
+'moon orchid', 
+'bird of paradise', 
+'monkshood', 
+'globe thistle', 
+'snapdragon', 
+'colt\'s foot', 
+'king protea', 
+'spear thistle', 
+'yellow iris', 
+'globe-flower', 
+'purple coneflower', 
+'peruvian lily', 
+'balloon flower', 
+'giant white arum lily', 
+'fire lily', 
+'pincushion flower', 
+'fritillary', 
+'red ginger', 
+'grape hyacinth', 
+'corn poppy', 
+'prince of wales feathers', 
+'stemless gentian', 
+'artichoke', 
+'sweet william', 
+'carnation', 
+'garden phlox', 
+'love in the mist', 
+'mexican aster', 
+'alpine sea holly', 
+'ruby-lipped cattleya', 
+'cape flower', 
+'great masterwort', 
+'siam tulip', 
+'lenten rose', 
+'barbeton daisy', 
+'daffodil', 
+'sword lily', 
+'poinsettia', 
+'bolero deep blue', 
+'wallflower', 
+'marigold', 
+'buttercup', 
+'oxeye daisy', 
+'common dandelion', 
+'petunia', 
+'wild pansy', 
+'primula', 
+'sunflower', 
+'pelargonium', 
+'bishop of llandaff', 
+'gaura', 
+'geranium', 
+'orange dahlia', 
+'pink-yellow dahlia?', 
+'cautleya spicata', 
+'japanese anemone', 
+'black-eyed susan', 
+'silverbush', 
+'californian poppy', 
+'osteospermum', 
+'spring crocus', 
+'bearded iris', 
+'windflower', 
+'tree poppy', 
+'gazania', 
+'azalea', 
+'water lily', 
+'rose', 
+'thorn apple', 
+'morning glory', 
+'passion flower', 
+'lotus', 
+'toad lily', 
+'anthurium', 
+'frangipani', 
+'clematis', 
+'hibiscus', 
+'columbine', 
+'desert-rose', 
+'tree mallow', 
+'magnolia', 
+'cyclamen', 
+'watercress', 
+'canna lily', 
+'hippeastrum', 
+'bee balm', 
+'ball moss', 
+'foxglove', 
+'bougainvillea', 
+'camellia', 
+'mallow', 
+'mexican petunia', 
+'bromelia', 
+'blanket flower', 
+'trumpet creeper', 
+'blackberry lily']
+
+
 def get_classes_names(dataset, data_path):
     if dataset == 'imagenet':
         dset = datasets.ImageNet(data_path, split='val')
@@ -29,9 +133,22 @@ def get_classes_names(dataset, data_path):
     elif dataset == 'cifar100':
         dset = datasets.CIFAR100(data_path, train=False)
         return dset.classes
+    elif dataset == 'oxford-iiit-pets':
+        dset = datasets.OxfordIIITPet(root=data_path, split='test')
+        return dset.classes
+    elif dataset == 'flowers':
+        return flower_classes
     else:
         return ['none']
 
+def save_batched_images(full_path, tensors, indices, labels, classes_name, append):
+    full_path = os.path.abspath(full_path)
+    for _d in out.recursive_create_dir(full_path):
+        out.create_dir(_d)
+    out.create_dir(full_path)
+    for idx, img, label in zip(indices, tensors, labels):
+        img_path = f'{full_path}/{int(idx)}_{classes_name[int(label)]}' + append + '.png'
+        save_image(img, img_path)
 
 def save_tensor_images(path, img_indices, seed_name, results, seed, targets, labels, classes_name):
     path = os.path.abspath(path)
@@ -45,17 +162,8 @@ def save_tensor_images(path, img_indices, seed_name, results, seed, targets, lab
     if seed is not None:
         save_image(seed, os.path.join(path, f'{seed_name}.png'))
     # io.save_object(0, seed, 0, os.path.join(path, f'{seed_name}.pkl'))
-
-    for idx, result, target, label in zip(img_indices, results, targets, labels):
-        img_name = f'{int(idx)}_{classes_name[int(label)]}_seed_{seed_name}'
-        img_target = f'{path_target}/{img_name}.png'
-        img_result = f'{path_result}/{img_name}.png'
-
-        save_image(target, img_target)
-        save_image(result, img_result)
-
-        # io.save_object(int(idx), target, label.item(), f'{path_target}/{img_name}.pkl')
-        # io.save_object(int(idx), result, label.item(), f'{path_result}/{img_name}.pkl')
+    save_batched_images(path_target, targets, img_indices, labels, classes_name, f'_seed_{seed_name}')
+    save_batched_images(path_result, results, img_indices, labels, classes_name, f'_seed_{seed_name}')
 
     print(f'=> Saved images in {path}')
 

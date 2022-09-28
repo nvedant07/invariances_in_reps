@@ -38,7 +38,7 @@ def set_paper_friendly_params():
     plt.rcParams['legend.fontsize'] = 18
     plt.rcParams['figure.titlesize'] = 25
     plt.rcParams['lines.linewidth'] = 4.0
-    plt.rcParams['lines.markersize'] = 7
+    plt.rcParams['lines.markersize'] = 12
     plt.rcParams['lines.markeredgewidth'] = 3
     plt.rcParams['grid.color'] = 'grey'
     plt.rcParams['grid.linestyle'] = '--'
@@ -73,15 +73,19 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
     else:
         sns.set_style('whitegrid')
 
-    assert np.all([len(x) == len(lines_y[0]) for x in lines_y[1:]]), "All lists in lines_y should be of the same size"
-    
     if savefig:
         out.create_dir('{}/{}'.format(root_dir, RESULTS_FOLDER_NAME))
         out.create_dir('{}/{}/{}'.format(root_dir, RESULTS_FOLDER_NAME, results_subfolder_name))
         out.create_dir('{}/{}/{}/{}'.format(root_dir, RESULTS_FOLDER_NAME, results_subfolder_name, subfolder))
     
     if x_vals is None:
-        x_vals = np.arange(1, len(lines_y[0]) + 1)
+        x_vals = [np.arange(1, len(lines_y[i]) + 1) for i in range(len(lines_y))]
+    if not (isinstance(x_vals[0], list) or isinstance(x_vals[0], tuple) or isinstance(x_vals[0], np.ndarray)):
+        x_vals = [x_vals] * len(lines_y)
+    
+    print (x_vals, lines_y)
+    assert np.all([len(x_vals[i]) == len(lines_y[i]) for i in range(len(lines_y))]), \
+        "All lists in (x_vals, lines_y) should be of the same size"
 
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111)
@@ -95,16 +99,23 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
     if y_lims is not None:
         ax.set_ylim(y_lims)
 
-    if isinstance(x_vals[0], np.str_) or isinstance(x_vals[0], str):
-        x_ticklabels = x_vals
-        x_vals = np.arange(1, len(x_vals) + 1)
-        ax.set_xticks(x_vals)
-        ax.set_xticklabels(x_ticklabels, rotation='vertical')
+    max_xv, max_xv_len = None, None
+    for i in range(len(x_vals)):
+        if isinstance(x_vals[i][0], np.str_) or isinstance(x_vals[i][0], str):
+            if max_xv_len is None or max_xv_len < len(x_vals[i]):
+                max_xv_len = len(x_vals[i])
+                max_xv = x_vals[i]
+            x_vals[i] = np.arange(1, len(x_vals[i]) + 1)
+    if max_xv is not None:
+        ax.set_xticks(np.arange(1, max_xv_len + 1))
+        ax.set_xticklabels(max_xv, rotation='vertical')
         print ('Set x_vals')
+
     for i in range(len(lines_y)):
-        ax.plot(x_vals, lines_y[i], 'o', 
+        ax.plot(x_vals[i], lines_y[i], 
             color=COLORS[i] if colors is None else colors[i], 
-            marker='o' if marker[i] else '', 
+            marker='o' if isinstance(marker[i], bool) and marker[i] else \
+                marker[i] if marker is not None else None, 
             alpha=0.75,
             linestyle=linestyles[i] if linestyles is not None else '-', 
             label=legend_vals[i] if legend_vals is not None else "")
@@ -112,7 +123,7 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
     if y_err is not None:
         assert len(y_err) == len(lines_y)
         for i in range(len(y_err)):
-            ax.fill_between(x_vals, np.array(lines_y[i]) - np.array(y_err[i]), 
+            ax.fill_between(x_vals[i], np.array(lines_y[i]) - np.array(y_err[i]), 
                 np.array(lines_y[i]) + np.array(y_err[i]), alpha=0.15, color=COLORS[i] if colors is None else colors[i])
 
     if vertical_line is not None:
@@ -133,7 +144,7 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
                 linestyle='--', label=legend_vals[len(lines_y)+len(vertical_line)+j] if len(legend_vals) > len(lines_y)+len(vertical_line)+j else "")
         if horizontal_lines_err is not None:
             for j in range(len(horizontal_lines_err)):
-                ax.fill_between(x_vals, horizontal_lines[j] - horizontal_lines_err[j], 
+                ax.fill_between(x_vals[i], horizontal_lines[j] - horizontal_lines_err[j], 
                     horizontal_lines[j] + horizontal_lines_err[j], alpha=0.15, 
                     color=COLORS[len(lines_y)+len(vertical_line)+j] if colors is None else colors[len(lines_y)+len(vertical_line)+j])
 
