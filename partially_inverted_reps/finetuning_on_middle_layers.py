@@ -19,8 +19,8 @@ try:
     from architectures.utils import intermediate_layer_names
     from architectures.callbacks import LightningWrapper, LinearEvalWrapper
     from attack.callbacks import AdvCallback
-    from datasets.data_modules import DATA_MODULES
-    import datasets.dataset_metadata as dsmd
+    from data_modules import DATA_MODULES
+    import dataset_metadata as dsmd
     from partially_inverted_reps.partial_loss import PartialInversionLoss, PartialInversionRegularizedLoss
     from partially_inverted_reps import DATA_PATH_IMAGENET, DATA_PATH
 except:

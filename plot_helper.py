@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import MultipleLocator
 from matplotlib_venn import venn3, venn2
 import matplotlib.patches as mpatches
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes, mark_inset
 
 import seaborn as sns
 import numpy as np
@@ -51,7 +52,8 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
     legend_vals=None, vertical_line=None, 
     horizontal_lines=None, horizontal_lines_err=None, colors=None, linestyles=None,
     y_lims=None, root_dir='.', paper_friendly_plots=False, plot_inside=False, legend_location='best', savefig=True, figsize=(5,3), 
-    marker=False, results_subfolder_name='untitled', grid_spacing=None, y_err=None, legend_ncol=None):
+    marker=False, results_subfolder_name='untitled', grid_spacing=None, y_err=None, legend_ncol=None, 
+    inset=None):
     """
     Custom function to make a line plot.
     lines_y: list of lists or a 2D numpy array. Each list/row contains y_coordinates for a particular line.
@@ -83,7 +85,6 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
     if not (isinstance(x_vals[0], list) or isinstance(x_vals[0], tuple) or isinstance(x_vals[0], np.ndarray)):
         x_vals = [x_vals] * len(lines_y)
     
-    print (x_vals, lines_y)
     assert np.all([len(x_vals[i]) == len(lines_y[i]) for i in range(len(lines_y))]), \
         "All lists in (x_vals, lines_y) should be of the same size"
 
@@ -159,7 +160,33 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
             ax.legend(bbox_to_anchor=(1, 0.5))
         elif paper_friendly_plots and plot_inside:
             ax.legend(loc=legend_location)
-    
+
+    if inset is not None:
+        axins = zoomed_inset_axes(ax, zoom=inset['zoom'], loc=inset['loc'])
+        filtered_xvals, filtered_yvals = [], []
+        all_ins_y = []
+        for x, y in zip(x_vals, lines_y):
+            filt_xy = [(x_, y_) for x_, y_ in zip(x,y) \
+                if x_ <= inset['xlim'][1] and x_ >= inset['xlim'][0]]
+            filt_x, filt_y = list(zip(*filt_xy))
+            filtered_xvals.append(filt_x)
+            filtered_yvals.append(filt_y)
+            all_ins_y.extend(filt_y)
+        axins.set_ylim((np.min(all_ins_y) - 0.05, np.max(all_ins_y) + 0.05))
+        axins.set_xlim(inset['xlim'])
+        axins.set_yticklabels([])
+        axins.set_xticklabels([])
+        axins.set_yticks([])
+        axins.set_xticks([])
+        for i in range(len(filtered_yvals)):
+            axins.plot(filtered_xvals[i], filtered_yvals[i], 
+                color=COLORS[i] if colors is None else colors[i], 
+                marker='o' if isinstance(marker[i], bool) and marker[i] else \
+                    marker[i] if marker is not None else None, 
+                alpha=0.75,
+                linestyle=linestyles[i] if linestyles is not None else '-')
+        mark_inset(ax, axins, loc1=inset['loc1'], loc2=inset['loc2'], fc="none", ec="#4C4E52")
+
     if savefig:
         plt.savefig(figpath, bbox_inches='tight')
         plt.show()
