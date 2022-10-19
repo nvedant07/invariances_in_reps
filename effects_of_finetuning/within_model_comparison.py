@@ -1,7 +1,6 @@
 from pytorch_lightning import utilities as pl_utils
 from pytorch_lightning.trainer.trainer import Trainer
 from pytorch_lightning.plugins import DDPPlugin
-from torchvision.models.feature_extraction import get_graph_node_names
 
 import torch
 from functools import partial
@@ -17,8 +16,9 @@ from timm.models.fx_features import GraphExtractNet
 try:
     import architectures as arch
     from architectures.callbacks import LightningWrapper
-    from datasets.data_modules import DATA_MODULES
-    import datasets.dataset_metadata as dsmd
+    from architectures.utils import intermediate_layer_names
+    from data_modules import DATA_MODULES
+    import dataset_metadata as dsmd
 except:
     raise ValueError('Run as a module to trigger __init__.py, ie '
                      'run as python -m human_nn_alignment.reg_free_loss')
@@ -33,7 +33,7 @@ parser.add_argument('--total_imgs', type=int, default=None)
 parser.add_argument('--checkpoint', type=str, default='')
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--append_path', type=str, default='')
-parser.add_argument('--image_size', type=int, default=384)
+parser.add_argument('--image_size', type=int, default=224)
 
 DATA_PATH = '/NS/twitter_archive/work/vnanda/data'
 ALT_DATA_PATH = '/NS/robustness_1/work/vnanda/data'
@@ -56,7 +56,7 @@ def main(args=None):
         batch_size=args.batch_size)
     dm.init_remaining_attrs(args.eval_dataset)
 
-    m1 = arch.create_model(args.model, None, pretrained=True,
+    m1 = arch.create_model(args.model, args.base_dataset, pretrained=True,
                            checkpoint_path=args.checkpoint, seed=SEED, 
                            num_classes=dsmd.DATASET_PARAMS[args.base_dataset if args.append_path == 'base' \
                                                            else args.eval_dataset]['num_classes'],
@@ -64,28 +64,10 @@ def main(args=None):
                                             dataset_name=args.base_dataset,
                                             mean=torch.tensor([0,0,0]),
                                             std=torch.tensor([1,1,1]),
-                                            inference_kwargs={'with_latent': True}))
-    _, node_names = get_graph_node_names(m1.model)
-    model_info = ''
-    filtered_nodes = []
-    if m1.model.__class__.__name__ == 'VisionTransformer':
-        block_number_to_layer = {}
-        for n in node_names:
-            if n.startswith('blocks.'):
-                current_block = int(n.split('blocks.')[1].split('.')[0])
-                if current_block not in block_number_to_layer:
-                    block_number_to_layer[current_block] = [n]
-                else:
-                    block_number_to_layer[current_block].append(n)
-            if n in ['fc_norm']:
-                filtered_nodes.append(n)
-        for block in sorted(block_number_to_layer.keys(), reverse=True):
-            filtered_nodes = [block_number_to_layer[block][-1]] + filtered_nodes
-    elif m1.model.__class__.__name__ == 'ResNetV2':
-        for n in node_names:
-            if n.endswith('.pool') or n.endswith('.add'):
-                filtered_nodes.append(n)
-    model_info += '\n\nFiltered:\n'
+                                            inference_kwargs={'with_latent': True},
+                                            training_params_dataset=args.eval_dataset))
+    filtered_nodes = intermediate_layer_names(m1.model)
+    model_info = '\n\nFiltered:\n'
     for n in filtered_nodes:
         model_info += f'{n}\n'
     print (model_info)

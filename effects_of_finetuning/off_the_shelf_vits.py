@@ -4,6 +4,7 @@ from pytorch_lightning.plugins import DDPPlugin
 from torchvision.models.feature_extraction import get_graph_node_names
 
 import torch
+import torch.nn as nn
 from functools import partial
 import argparse, os
 import pathlib
@@ -18,8 +19,8 @@ try:
     import architectures as arch
     from architectures.callbacks import LightningWrapper
     from architectures.utils import intermediate_layer_names
-    from datasets.data_modules import DATA_MODULES
-    import datasets.dataset_metadata as dsmd
+    from data_modules import DATA_MODULES
+    import dataset_metadata as dsmd
 except:
     raise ValueError('Run as a module to trigger __init__.py, ie '
                      'run as python -m human_nn_alignment.reg_free_loss')
@@ -35,13 +36,13 @@ parser.add_argument('--total_imgs', type=int, default=None)
 parser.add_argument('--base_checkpoint', type=str, default='')
 parser.add_argument('--finetuned_checkpoint', type=str, default='')
 parser.add_argument('--seed', type=int, default=1)
-parser.add_argument('--input_size', type=int, default=384)
+parser.add_argument('--input_size', type=int, default=224)
 
 DATA_PATH = '/NS/twitter_archive/work/vnanda/data'
 ALT_DATA_PATH = '/NS/robustness_1/work/vnanda/data'
 SEED = 2
 NUM_NODES = 1
-DEVICES = 2
+DEVICES = torch.cuda.device_count()
 STRATEGY = DDPPlugin(find_unused_parameters=True) if DEVICES > 1 else None
 BASE_PATH = pathlib.Path(__file__).parent.resolve()
 
@@ -64,8 +65,9 @@ def main(args=None):
                                             dataset_name=args.base_dataset,
                                             mean=torch.tensor([0,0,0]),
                                             std=torch.tensor([1,1,1]),
-                                            inference_kwargs={'with_latent': True}))
-    m2 = arch.create_model(args.model, None, pretrained=True,
+                                            inference_kwargs={'with_latent': True},
+                                            training_params_dataset=args.finetuning_dataset))
+    m2 = arch.create_model(args.model, args.base_dataset, pretrained=True,
                            checkpoint_path=args.finetuned_checkpoint, seed=SEED, 
                            num_classes=dsmd.DATASET_PARAMS[args.finetuning_dataset]['num_classes'],
                            callback=partial(LightningWrapper, 
@@ -73,7 +75,14 @@ def main(args=None):
                                             mean=torch.tensor([0,0,0]),
                                             std=torch.tensor([1,1,1]),
                                             inference_kwargs={'with_latent': True}))
-    _, node_names = get_graph_node_names(m2.model)
+
+    ### TODO: make use of multiple devices, either use pytorch lightning or make use of DistributedDataParallel
+    ## DataParallel leads to hanging
+    # if DEVICES > 1:
+    #     m1.model = nn.DataParallel(m1.model, device_ids=list(range(DEVICES))).to(f'cuda:{list(range(DEVICES))[0]}')
+    #     m2.model = nn.DataParallel(m2.model, device_ids=list(range(DEVICES))).to(f'cuda:{list(range(DEVICES))[0]}')
+
+    filtered_nodes, node_names = intermediate_layer_names(m2.model, return_all=True)
     model_info = ''
     if not os.path.exists(
         f'{pathlib.Path(__file__).parent.resolve()}/results/{args.model}-layers.txt'):
@@ -92,7 +101,6 @@ def main(args=None):
                 model_info += f'{n}, {rep.shape if hasattr(rep, "shape") else rep}\n' 
         with open(f'{pathlib.Path(__file__).parent.resolve()}/results/{args.model}-layers.txt', 'w') as fp:
             fp.write(model_info)
-    filtered_nodes = intermediate_layer_names(m2.model)
     model_info += '\n\nFiltered:\n'
     for n in filtered_nodes:
         model_info += f'{n}\n'
@@ -111,15 +119,17 @@ def main(args=None):
                 if (f'{i}({filtered_nodes[i]})',f'{j}({filtered_nodes[j]})') in df.index:
                     print (f'{i}({filtered_nodes[i]}), {j}({filtered_nodes[j]}) already done, skipping...')
                     continue
+            print (f'Layer1num: {i}, Layer2num: {j}')
             stir_score = stir.STIR(m1, m2, 
                 helpers.InputNormalize(dsmd.IMAGENET_INCEPTION_MEAN, dsmd.IMAGENET_INCEPTION_STD), 
                 helpers.InputNormalize(dsmd.IMAGENET_INCEPTION_MEAN, dsmd.IMAGENET_INCEPTION_STD),
                 (dm.test_dataloader(), args.total_imgs),
                 verbose=True, 
                 layer1_num=i, layer2_num=j,
+                devices=list(range(DEVICES)),
                 ve_kwargs={
                     'constraint': 'unconstrained',
-                    'eps': 1000, # put whatever, threat model is unconstrained, so this does not matter
+                    'eps': 1000, # any value is fine, threat model is unconstrained, so this does not matter
                     'step_size': 0.5,
                     'iterations': 500,
                     'targeted': True,
