@@ -528,8 +528,8 @@ def plot_heatmaps(maps, x_labels, y_labels, plot_title="", subplot_titles=None, 
     if paper_friendly_plots:
         file_format = 'pdf'
         set_paper_friendly_params()
-#     else:
-#         sns.set_style('white')
+    else:
+        sns.set_style('white')
 
     out.create_dir('{}/{}/{}'.format(RESULTS_FOLDER_NAME, results_subfolder_name, subfolder))
     if types is None:

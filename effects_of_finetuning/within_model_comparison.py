@@ -62,8 +62,8 @@ def main(args=None):
                                                            else args.eval_dataset]['num_classes'],
                            callback=partial(LightningWrapper, 
                                             dataset_name=args.base_dataset,
-                                            mean=torch.tensor([0,0,0]),
-                                            std=torch.tensor([1,1,1]),
+                                            mean=torch.tensor([0,0,0]), ## will be overridden later for stir computation
+                                            std=torch.tensor([1,1,1]), ## will be overridden later for stir computation
                                             inference_kwargs={'with_latent': True},
                                             training_params_dataset=args.eval_dataset))
     filtered_nodes = intermediate_layer_names(m1.model)

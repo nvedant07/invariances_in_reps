@@ -37,6 +37,7 @@ parser.add_argument('--base_checkpoint', type=str, default='')
 parser.add_argument('--finetuned_checkpoint', type=str, default='')
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--input_size', type=int, default=224)
+parser.add_argument('--task', type=str, default=None)
 
 DATA_PATH = '/NS/twitter_archive/work/vnanda/data'
 ALT_DATA_PATH = '/NS/robustness_1/work/vnanda/data'
@@ -63,8 +64,8 @@ def main(args=None):
                            checkpoint_path=args.base_checkpoint, seed=SEED, 
                            callback=partial(LightningWrapper, 
                                             dataset_name=args.base_dataset,
-                                            mean=torch.tensor([0,0,0]),
-                                            std=torch.tensor([1,1,1]),
+                                            mean=torch.tensor([0,0,0]), ## will be overridden later for stir computation
+                                            std=torch.tensor([1,1,1]), ## will be overridden later for stir computation
                                             inference_kwargs={'with_latent': True},
                                             training_params_dataset=args.finetuning_dataset))
     m2 = arch.create_model(args.model, args.base_dataset, pretrained=True,
@@ -72,9 +73,10 @@ def main(args=None):
                            num_classes=dsmd.DATASET_PARAMS[args.finetuning_dataset]['num_classes'],
                            callback=partial(LightningWrapper, 
                                             dataset_name=args.finetuning_dataset,
-                                            mean=torch.tensor([0,0,0]),
-                                            std=torch.tensor([1,1,1]),
-                                            inference_kwargs={'with_latent': True}))
+                                            mean=torch.tensor([0,0,0]), ## will be overridden later for stir computation
+                                            std=torch.tensor([1,1,1]), ## will be overridden later for stir computation
+                                            inference_kwargs={'with_latent': True}),
+                           loading_function_kwargs={'strict': False})
 
     ### TODO: make use of multiple devices, either use pytorch lightning or make use of DistributedDataParallel
     ## DataParallel leads to hanging
@@ -111,11 +113,13 @@ def main(args=None):
     # results = ['layer1,layer2,m1m2,m2m1,cka']
     for i in range(len(filtered_nodes)):
         for j in range(len(filtered_nodes)):
-            if os.path.exists(f'{BASE_PATH}/results/{args.model}_eval_{args.eval_dataset}-'
-                f'base_{args.base_dataset}-finetune_{args.finetuning_dataset}.txt'):
-                df = pd.read_csv(f'{BASE_PATH}/results/{args.model}_eval_{args.eval_dataset}-'
-                    f'base_{args.base_dataset}-finetune_{args.finetuning_dataset}.txt', 
-                    header=None, sep=',', index_col=[0,1])
+            res_filepath = f'{BASE_PATH}/results/{args.model}_eval_{args.eval_dataset}-'\
+                           f'base_{args.base_dataset}-finetune_{args.finetuning_dataset}.txt' \
+                           if args.task is None else \
+                           f'{BASE_PATH}/results/{args.model}_eval_{args.eval_dataset}-'\
+                           f'base_{args.base_dataset}-finetune_{args.finetuning_dataset}_{args.task}.txt'
+            if os.path.exists(res_filepath):
+                df = pd.read_csv(res_filepath, header=None, sep=',', index_col=[0,1])
                 if (f'{i}({filtered_nodes[i]})',f'{j}({filtered_nodes[j]})') in df.index:
                     print (f'{i}({filtered_nodes[i]}), {j}({filtered_nodes[j]}) already done, skipping...')
                     continue
@@ -140,8 +144,7 @@ def main(args=None):
 
             if not os.path.exists(f'{BASE_PATH}/results'):
                 os.mkdir(f'{BASE_PATH}/results')
-            with open(f'{BASE_PATH}/results/{args.model}_eval_{args.eval_dataset}-base_{args.base_dataset}-'
-                    f'finetune_{args.finetuning_dataset}.txt', 'a') as fp:
+            with open(res_filepath, 'a') as fp:
                 # fp.write('\n'.join(results))
                 fp.write(f'{res}\n')
 
