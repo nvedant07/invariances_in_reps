@@ -4,7 +4,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -20,7 +20,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -34,7 +34,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -48,7 +48,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -62,7 +62,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -76,7 +76,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -90,7 +90,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -104,7 +104,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -118,7 +118,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -132,7 +132,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -146,7 +146,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -160,7 +160,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -174,7 +174,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -188,7 +188,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \
@@ -202,7 +202,7 @@ python -m partially_inverted_reps.finetuning \
 --finetune_mode linear \
 --model resnet50 \
 --batch_size 256 \
---checkpoint_path /NS/robustness_2/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+--checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
 --epochs 100 \
 --step_lr 20 \

@@ -1,25 +1,25 @@
-for layer in {0..16}
-do
-python -m partially_inverted_reps.finetuning_on_middle_layers \
---source_dataset imagenet \
---finetuning_dataset cifar100 \
---finetune_mode linear \
---model resnet50 \
---batch_size 256 \
---checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
---append_path robustl2eps3 \
---epochs 50 \
---step_lr 10 \
---save_every 0 \
---mode random \
---fraction 1. \
---seed 2 \
---layers $layer
-done
+# for layer in {0..16}
+# do
+# python -m partially_inverted_reps.finetuning_on_middle_layers \
+# --source_dataset imagenet \
+# --finetuning_dataset cifar100 \
+# --finetune_mode linear \
+# --model resnet50 \
+# --batch_size 256 \
+# --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
+# --append_path robustl2eps3 \
+# --epochs 50 \
+# --step_lr 10 \
+# --save_every 0 \
+# --mode random \
+# --fraction 1. \
+# --seed 2 \
+# --layers $layer
+# done
 
 for seed in {1..5}
 do
-for layer in {0..16}
+for layer in {13..16}
 do
 python -m partially_inverted_reps.finetuning_on_middle_layers \
 --source_dataset imagenet \

@@ -1,9 +1,9 @@
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -16,10 +16,10 @@ for seed in {1..5}
 do
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -30,10 +30,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -44,10 +44,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -58,10 +58,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -72,10 +72,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -86,10 +86,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -100,10 +100,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -114,10 +114,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -128,10 +128,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -142,10 +142,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -156,10 +156,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -170,10 +170,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -184,10 +184,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \
@@ -198,10 +198,10 @@ python -m partially_inverted_reps.finetuning \
 
 python -m partially_inverted_reps.finetuning \
 --source_dataset imagenet \
---finetuning_dataset oxford-iiit-pets \
+--finetuning_dataset places365 \
 --finetune_mode linear \
 --model resnet50 \
---batch_size 256 \
+--batch_size 1024 \
 --step_lr 20 \
 --checkpoint_path /NS/robustness_3/work/vnanda/adv-robustness/logs/robust_imagenet/eps3/resnet-50-l2-eps3.ckpt \
 --append_path robustl2eps3 \

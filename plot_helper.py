@@ -426,9 +426,11 @@ def stitched_bar(bars, plot_titles, results_dir, filename, extension, y_lims, x_
     columns = columns if len(bars) > columns else len(bars)
     rows = int(len(bars)/columns)
     fig = plt.figure(figsize=figsize)
+    if isinstance(y_lims[0], float) or isinstance(y_lims[0], int):
+        y_lims = [y_lims] * len(bars)
     for i in range(1, columns * rows + 1):
         ax = fig.add_subplot(rows, columns, i)
-        ax.set_ylim(y_lims)
+        ax.set_ylim(y_lims[i-1])
         for j in range(len(bars[i-1])):
             # print (x + j*w, bars[i-1][j])
             ax.bar(x + j*w, bars[i-1][j], width=w, color=COLORS[j], align='center', label=legend_vals[j] if legend_vals is not None else '')
@@ -439,8 +441,7 @@ def stitched_bar(bars, plot_titles, results_dir, filename, extension, y_lims, x_
     fig.suptitle(global_title)
     if savefig:
         fig.savefig('{}/{}.{}'.format(results_dir, filename, extension))
-    else:
-        plt.show()
+    plt.show()
     plt.close()
     return '{}/{}.{}'.format(results_dir, filename, extension)
 
