@@ -32,8 +32,8 @@ All these datasets exist at ``/NS/twitter-9/work/vnanda/invariances_in_reps/llm/
 
 In order to finetune I have a script ``finetune_instructions.py``. Some examples of parameters to this script can be found under ``scripts/``. 
 
- * Usual use on cluster nodes: we use deepspeed launcher for usual jobs since it's simple and does sync across nodes. Examples can be found in 
- * SLURM: For launching jobs on SLURM, exmaples are included in ``scripts/pythia-1.4b-*.sh`` files. deepspeed is not supported for SLURM runs and hence we use torch.distributed to launch these runs.
+ * Usual use on cluster nodes: we use deepspeed launcher for usual jobs since it's simple and does sync across nodes. Examples can be found in ``scripts/pythia-2.8b-ft-1.sh``.
+ * SLURM: For launching jobs on SLURM, examples are included in ``scripts/pythia-1.4b-*.sh``. deepspeed is not supported for SLURM runs and hence we use torch.distributed to launch these runs.
 
 To reproduce Out-Of-Memory (OOM) error, you can use the command in ``scripts/pythia-12b-ft-1.sh``.
 
