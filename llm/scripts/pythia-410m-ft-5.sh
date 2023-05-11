@@ -1,0 +1,19 @@
+deepspeed --num_gpus=2 --num_nodes=1 finetuning_instructions.py \
+ --input-model /NS/llm-1/nobackup/vnanda/llm_base_models/pythia-410m \
+ --epochs 50 \
+ --local-output-dir /NS/llm-1/nobackup/vnanda/llm_finetuning/pythia-410m-finetuning \
+ --finetuning-ds databricks/databricks-dolly-15k \
+ --partial-dataset summarization \
+ --wandb-project-name pythia-410m-dolly-finetuning \
+ --ds-cache-dir /NS/twitter-9/work/vnanda/invariances_in_reps/llm/data \
+ --logging-steps 10 \
+ --per-device-train-batch-size 16 \
+ --per-device-eval-batch-size 16 \
+ --gradient-accumulation-steps 1 \
+ --save-steps 1000 \
+ --save-total-limit 100 \
+ --eval-steps 50 \
+ --warmup-steps 50 \
+ --test-size 200 \
+ --lr 5e-6 \
+ --deepspeed dolly/config/ds_z3_bf16_config.json
