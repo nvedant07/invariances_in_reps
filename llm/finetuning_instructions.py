@@ -218,6 +218,34 @@ def train(
     os.environ["WANDB_WATCH"] = "all"
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+    training_args = TrainingArguments(
+        output_dir=local_output_dir,
+        per_device_train_batch_size=per_device_train_batch_size,
+        per_device_eval_batch_size=per_device_eval_batch_size,
+        gradient_accumulation_steps=gradient_accumulation_steps,
+        fp16=False,
+        bf16=bf16,
+        learning_rate=lr,
+        num_train_epochs=epochs,
+        deepspeed=deepspeed,
+        gradient_checkpointing=gradient_checkpointing,
+        logging_dir=f"{local_output_dir}/runs",
+        logging_strategy="steps",
+        logging_steps=logging_steps,
+        evaluation_strategy="steps",
+        eval_steps=eval_steps,
+        save_strategy="steps",
+        save_steps=save_steps,
+        save_total_limit=save_total_limit,
+        load_best_model_at_end=False,
+        report_to="wandb",
+        run_name=wandb_run_name,
+        disable_tqdm=False,
+        remove_unused_columns=False,
+        local_rank=local_rank,
+        warmup_steps=warmup_steps,
+    )
+
     model, tokenizer = get_model_tokenizer(
         pretrained_model_name_or_path=input_model, gradient_checkpointing=gradient_checkpointing
     )
@@ -259,36 +287,9 @@ def train(
     if gradient_accumulation_steps > 1:
         local_output_dir += f'-gacc{gradient_accumulation_steps}'
 
+
     resume_from_checkpoint = resume_path if resume_path is not None else \
         True if len(glob.glob(f'{local_output_dir}/checkpoint-*')) > 0 else False
-
-    training_args = TrainingArguments(
-        output_dir=local_output_dir,
-        per_device_train_batch_size=per_device_train_batch_size,
-        per_device_eval_batch_size=per_device_eval_batch_size,
-        gradient_accumulation_steps=gradient_accumulation_steps,
-        fp16=False,
-        bf16=bf16,
-        learning_rate=lr,
-        num_train_epochs=epochs,
-        deepspeed=deepspeed,
-        gradient_checkpointing=gradient_checkpointing,
-        logging_dir=f"{local_output_dir}/runs",
-        logging_strategy="steps",
-        logging_steps=logging_steps,
-        evaluation_strategy="steps",
-        eval_steps=eval_steps,
-        save_strategy="steps",
-        save_steps=save_steps,
-        save_total_limit=save_total_limit,
-        load_best_model_at_end=False,
-        report_to="wandb",
-        run_name=wandb_run_name,
-        disable_tqdm=False,
-        remove_unused_columns=False,
-        local_rank=local_rank,
-        warmup_steps=warmup_steps,
-    )
 
     logger.info("Instantiating Trainer")
 

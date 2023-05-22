@@ -15,13 +15,13 @@ export MASTER_ADDR=$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)
 export MASTER_PORT=9901
 
 
-## small batch_size, with gradient checkpointing + grad acc
+## small batch_size with grad acc; no grad checkpointing
 srun --jobid $SLURM_JOBID bash -c 'python -m torch.distributed.run \
 --nproc_per_node $GPUS_PER_NODE --nnodes $SLURM_NNODES --node_rank $SLURM_PROCID \
 --master_addr $MASTER_ADDR --master_port $MASTER_PORT \
 finetuning_instructions.py \
 --input-model /NS/llm-1/nobackup/vnanda/llm_base_models/pythia-12b \
---epochs 50 \
+--epochs 20 \
 --local-output-dir /NS/llm-1/work/vnanda/llm_finetuning/pythia-12b-finetuning \
 --finetuning-ds databricks/databricks-dolly-15k \
 --wandb-project-name pythia12b-dolly-finetuning \
@@ -30,10 +30,10 @@ finetuning_instructions.py \
 --per-device-train-batch-size 1 \
 --per-device-eval-batch-size 1 \
 --gradient-accumulation-steps 4 \
---gradient-checkpointing \
---save-steps 1000 \
+--no-gradient-checkpointing \
+--save-steps 500 \
 --save-total-limit 20 \
---eval-steps 50 \
+--eval-steps 100 \
 --warmup-steps 50 \
 --test-size 200 \
 --lr 5e-6 \

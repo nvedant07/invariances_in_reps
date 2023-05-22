@@ -2,7 +2,7 @@
 #
 #SBATCH --partition=a100        # Use GPU partition "a100"
 #SBATCH --gres=gpu:8          # set 2 GPUs per job
-#SBATCH -c 16                   # Number of cores
+#SBATCH -c 8                   # Number of cores
 #SBATCH -N 1                    # Ensure that all cores are on one machine
 #SBATCH --ntasks-per-node=1     # crucial - only 1 task per dist per node!
 #SBATCH -t 4-00:00              # Maximum run-time in D-HH:MM
@@ -15,28 +15,27 @@ export MASTER_ADDR=$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)
 export MASTER_PORT=9901
 
 
-## small batch_size, with gradient checkpointing + grad acc
+## use the config that does CPU offloading with large batch size with gradient checkpointing; no grad acc
 srun --jobid $SLURM_JOBID bash -c 'python -m torch.distributed.run \
 --nproc_per_node $GPUS_PER_NODE --nnodes $SLURM_NNODES --node_rank $SLURM_PROCID \
 --master_addr $MASTER_ADDR --master_port $MASTER_PORT \
 finetuning_instructions.py \
 --input-model /NS/llm-1/nobackup/vnanda/llm_base_models/pythia-12b \
---epochs 50 \
+--epochs 20 \
 --local-output-dir /NS/llm-1/work/vnanda/llm_finetuning/pythia-12b-finetuning \
 --finetuning-ds databricks/databricks-dolly-15k \
 --wandb-project-name pythia12b-dolly-finetuning \
 --ds-cache-dir /NS/twitter-9/work/vnanda/invariances_in_reps/llm/data \
 --logging-steps 10 \
---per-device-train-batch-size 1 \
---per-device-eval-batch-size 1 \
---gradient-accumulation-steps 4 \
+--per-device-train-batch-size 16 \
+--per-device-eval-batch-size 16 \
 --gradient-checkpointing \
---save-steps 1000 \
+--save-steps 500 \
 --save-total-limit 20 \
---eval-steps 50 \
+--eval-steps 100 \
 --warmup-steps 50 \
 --test-size 200 \
 --lr 5e-6 \
---deepspeed dolly/config/ds_z3_bf16_config.json'
+--deepspeed dolly/config/ds_z3_bf16_cpu_offload.json'
 
 
