@@ -9,6 +9,9 @@ import argparse
 import warnings
 from functools import partial
 import distutils.util
+from pytorch_lightning.loggers import WandbLogger
+import wandb
+import yaml
 try:
     from training import LitProgressBar, NicerModelCheckpointing
     import training.finetuning as ft
@@ -16,13 +19,15 @@ try:
     from architectures.callbacks import LightningWrapper, LinearEvalWrapper
     from data_modules import DATA_MODULES
     import dataset_metadata as dsmd
-    from partially_inverted_reps import DATA_PATH_IMAGENET, DATA_PATH
+    from partially_inverted_reps import DATA_PATH_IMAGENET, DATA_PATH, DATA_PATH_FLOWERS_PETS
 except:
     raise ValueError('Run as a module to trigger __init__.py, ie '
                      'run as python -m human_nn_alignment.reg_free_loss')
 
 
 parser = argparse.ArgumentParser(description='PyTorch Visual Explanation')
+parser.add_argument('--config_file', type=str, default=None)
+parser.add_argument('--wandb_name', type=str, default=None)
 parser.add_argument('--source_dataset', type=str, default=None)
 parser.add_argument('--finetuning_dataset', type=str, default='cifar10')
 parser.add_argument('--use_timm_for_cifar', dest='use_timm_for_cifar', 
@@ -40,8 +45,10 @@ parser.add_argument('--checkpoint_path', type=str, default='')
 parser.add_argument('--append_path', type=str, default='')
 parser.add_argument('--epochs', type=int, default=None)
 parser.add_argument('--optimizer', type=str, default='sgd')
-parser.add_argument('--lr', type=float, default=None)
-parser.add_argument('--step_lr', type=float, default=None)
+parser.add_argument('--lr', type=float, default=0.1)
+parser.add_argument('--step_lr', type=float, default=20) # assumes step_lr happens after every epoch, 
+                                                         # change accordingly when using cosine scheduler 
+                                                         # which operates on step rather than epoch
 parser.add_argument('--warmup_steps', type=int, default=None)
 parser.add_argument('--gradient_clipping', type=float, default=0.)
 parser.add_argument('--devices', type=str, default='all')
@@ -78,9 +85,35 @@ def setup_modified_linear_layer_kwargs(mode, dirpath, append):
 def main(args=None):
     if args is None:
         args = parser.parse_args()
+        if args.config_file is not None:
+            with open(args.config_file, 'r') as fp:
+                configs = yaml.safe_load(fp)
+            for k,v in configs.items():
+                args.__setattr__(k, v)
+
+
+    dirpath = f'{BASE_DIR if args.base_dir is None else args.base_dir}/checkpoints/'\
+              f'{args.model}-base-{args.source_dataset}-ft-{args.finetuning_dataset}/'
+    if args.mode is not None:
+        dirpath += f'frac-{args.fraction:.5f}-mode-{args.mode}-seed-{args.seed}-'
+    dirpath += f'ftmode-{args.finetune_mode}-lr-{args.lr}-steplr-{args.step_lr}-bs-{args.batch_size}-{args.append_path}'
+    if args.finetune_mode == 'full':
+        dirpath += f'-warmup-{args.warmup_steps}'
+    if not args.pretrained:
+        dirpath += f'-initseed-{args.model_seed}'
+    trained_model = [x for x in glob.glob(f'{dirpath}/*-topk=1.ckpt') \
+        if 'layer' not in x.split('/')[-1] and \
+           'pool'  not in x.split('/')[-1] and \
+           'full-feature' not in x.split('/')[-1]]
+    if len(trained_model) > 0 and int(trained_model[0].split('epoch=')[1].split('-')[0]) >= 20:
+        print (f'A trained model already exists for {args.fraction}-{args.seed}, {trained_model[0].split("/")[-1]}')
+        sys.exit(0)
+
+    print (f'Training and saving in {dirpath}...')
 
     dm = DATA_MODULES[args.finetuning_dataset](
-        data_dir=DATA_PATH_IMAGENET if 'imagenet' in args.finetuning_dataset else DATA_PATH,
+        data_dir=DATA_PATH_IMAGENET if 'imagenet' in args.finetuning_dataset else \
+            DATA_PATH_FLOWERS_PETS if args.finetuning_dataset in ['flowers','oxford-iiit-pets'] else DATA_PATH,
         transform_train=dsmd.TRAIN_TRANSFORMS_TRANSFER_DEFAULT(224),
         transform_test=dsmd.TEST_TRANSFORMS_DEFAULT(224),
         batch_size=args.batch_size)
@@ -116,18 +149,6 @@ def main(args=None):
                            use_timm_for_cifar=args.use_timm_for_cifar)
                            ### keep strict False since some resnets have a strange last layer
     
-    dirpath = f'{BASE_DIR if args.base_dir is None else args.base_dir}/checkpoints/'\
-              f'{args.model}-base-{args.source_dataset}-ft-{args.finetuning_dataset}/'
-    if args.mode is not None:
-        dirpath += f'frac-{args.fraction:.5f}-mode-{args.mode}-seed-{args.seed}-'
-    dirpath += f'ftmode-{args.finetune_mode}-lr-{m1.lr}-steplr-{m1.step_lr}-bs-{dm.batch_size}-{args.append_path}'
-    if args.finetune_mode == 'full':
-        dirpath += f'-warmup-{args.warmup_steps}'
-    if not args.pretrained:
-        dirpath += f'-initseed-{args.model_seed}'
-
-    print (args.use_timm_for_cifar, type(args.use_timm_for_cifar))
-
     new_layer, _, _, frac = ft.setup_model_for_finetuning(
         m1.model,
         dsmd.DATASET_PARAMS[args.finetuning_dataset]['num_classes'],
@@ -149,14 +170,12 @@ def main(args=None):
     print (f'Accuracy after loading: {torch.sum(torch.argmax(out[0], 1) == out[1])/ len(out[1])}')
 
     pl_utils.seed.seed_everything(args.seed, workers=True)
-
-    trained_model = [x for x in glob.glob(f'{dirpath}/*-topk=1.ckpt') \
-        if 'layer' not in x.split('/')[-1] and \
-           'pool'  not in x.split('/')[-1] and \
-           'full-feature' not in x.split('/')[-1]]
-    if len(trained_model) > 0 and int(trained_model[0].split('epoch=')[1].split('-')[0]) >= 8:
-        print (f'A trained model already exists for {args.fraction}-{args.seed}, {trained_model[0].split("/")[-1]}')
-        sys.exit(0)
+    
+    if args.wandb_name is not None:
+    # Initialize WandB
+        wandb_logger = WandbLogger(project=args.wandb_name, 
+                                   config=wandb.helper.parse_config(args, 
+                                   exclude=('epochs', 'save_every', 'wandb_name')))
     
     checkpointer = NicerModelCheckpointing(
         dirpath=dirpath, 
@@ -175,8 +194,9 @@ def main(args=None):
                       log_every_n_steps=1,
                       auto_select_gpus=True, 
                       deterministic=True,
+                      logger=wandb_logger if args.wandb_name is not None else True,
                       max_epochs=args.epochs,
-                      check_val_every_n_epoch=1,
+                      check_val_every_n_epoch=5,
                       num_sanity_val_steps=0,
                       sync_batchnorm=True,
                       gradient_clip_val=args.gradient_clipping,

@@ -32,7 +32,7 @@ def set_paper_friendly_params():
     plt.rcParams['axes.labelsize'] = 24
     plt.rcParams['axes.labelweight'] = 'bold'
     plt.rcParams['axes.titlesize'] = 15
-    plt.rcParams['axes.linewidth'] = 1.25
+    plt.rcParams['axes.linewidth'] = 0.2
     plt.rcParams['axes.titleweight'] = 'bold'
     plt.rcParams['xtick.labelsize'] = 20
     plt.rcParams['ytick.labelsize'] = 20
@@ -43,9 +43,9 @@ def set_paper_friendly_params():
     plt.rcParams['lines.markeredgewidth'] = 3
     plt.rcParams['grid.color'] = 'grey'
     plt.rcParams['grid.linestyle'] = '--'
-    plt.rcParams['grid.linewidth'] = 0.25
-    plt.rcParams['figure.dpi'] = 50
-    plt.rcParams['savefig.dpi'] = 50
+    plt.rcParams['grid.linewidth'] = 0.5
+    plt.rcParams['figure.dpi'] = 100
+    plt.rcParams['savefig.dpi'] = 100
 
 
 def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extension='png', x_vals=None, 
@@ -90,7 +90,7 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
 
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111)
-    if grid_spacing:
+    if grid_spacing is not None:
         ax.grid(b=True, color='#acacac', which='major', linestyle=':', linewidth=grid_spacing)
     ax.set_xlabel(x_title)
     ax.set_ylabel(y_title)
@@ -159,7 +159,7 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
             ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
             ax.legend(bbox_to_anchor=(1, 0.5))
         elif paper_friendly_plots and plot_inside:
-            ax.legend(loc=legend_location)
+            ax.legend(loc=legend_location, ncol=1 if legend_ncol is None else legend_ncol)
 
     if inset is not None:
         axins = zoomed_inset_axes(ax, zoom=inset['zoom'], loc=inset['loc'])
@@ -188,7 +188,7 @@ def line_plot(lines_y, x_title, y_title, plot_title, subfolder, filename, extens
         mark_inset(ax, axins, loc1=inset['loc1'], loc2=inset['loc2'], fc="none", ec="#4C4E52")
 
     if savefig:
-        plt.savefig(figpath, bbox_inches='tight')
+        plt.savefig(figpath, bbox_inches='tight', dpi=fig.dpi, transparent=True)
         plt.show()
     else:
         plt.show()
