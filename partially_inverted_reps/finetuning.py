@@ -53,7 +53,7 @@ parser.add_argument('--warmup_steps', type=int, default=None)
 parser.add_argument('--gradient_clipping', type=float, default=0.)
 parser.add_argument('--devices', type=str, default='all')
 ### specific to partial representation
-parser.add_argument('--mode', type=str, default=None)
+parser.add_argument('--mode', type=str, default=None, choices=['pca-least', 'pca', 'random', 'randproj'])
 parser.add_argument('--fraction', type=float, default=None)
 parser.add_argument('--num_features', type=int, default=None)
 parser.add_argument('--seed', type=int, default=2)
@@ -74,10 +74,13 @@ def lightningmodule_callback(args):
         return LightningWrapper
 
 
-def setup_modified_linear_layer_kwargs(mode, dirpath, append):
-    if mode == 'pca':
+def setup_modified_linear_layer_kwargs(mode, dirpath, append, seed):
+    if 'pca' in mode:
         sd = torch.load(f'{dirpath}/principal_components_{append}.pt', map_location='cpu')
         return {'projection_matrix': sd}
+    elif mode == 'randproj':
+        generator = torch.Generator().manual_seed(seed)
+        return {'generator': generator}
     else:
         return {}
 
@@ -105,7 +108,7 @@ def main(args=None):
         if 'layer' not in x.split('/')[-1] and \
            'pool'  not in x.split('/')[-1] and \
            'full-feature' not in x.split('/')[-1]]
-    if len(trained_model) > 0 and int(trained_model[0].split('epoch=')[1].split('-')[0]) >= 20:
+    if len(trained_model) > 0 and int(trained_model[0].split('epoch=')[1].split('-')[0]) >= 10:
         print (f'A trained model already exists for {args.fraction}-{args.seed}, {trained_model[0].split("/")[-1]}')
         sys.exit(0)
 
@@ -154,7 +157,7 @@ def main(args=None):
         dsmd.DATASET_PARAMS[args.finetuning_dataset]['num_classes'],
         args.mode, args.fraction, args.seed, 
         num_neurons=args.num_features, return_metadata=True, 
-        layer_kwargs=setup_modified_linear_layer_kwargs(args.mode, '/'.join(dirpath.split('/')[:-1]), args.append_path))
+        layer_kwargs=setup_modified_linear_layer_kwargs(args.mode, '/'.join(dirpath.split('/')[:-1]), args.append_path, args.seed))
     if args.fraction is None:
         args.__setattr__('fraction', frac)
     if hasattr(new_layer, 'neuron_indices'):
