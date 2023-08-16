@@ -39,3 +39,4 @@ finetuning_instructions.py \
 --deepspeed dolly/config/ds_z3_bf16_config.json'
 
 
+## 8hrs per epoch; very good

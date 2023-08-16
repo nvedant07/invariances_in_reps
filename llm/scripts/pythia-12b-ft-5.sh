@@ -39,3 +39,4 @@ finetuning_instructions.py \
 --deepspeed dolly/config/ds_z3_bf16_cpu_offload.json'
 
 
+## NOt so bad; CPU offloading hurts a bit 10 hrs per epoch

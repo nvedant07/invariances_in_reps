@@ -39,3 +39,4 @@ finetuning_instructions.py \
 --deepspeed dolly/config/ds_z3_bf16_cpu_offload.json'
 
 
+## We get OOM here, seems like gradient checkpotining is needed
