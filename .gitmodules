@@ -1,3 +1,6 @@
 [submodule "deep-learning-base"]
 	path = deep-learning-base
 	url = git@github.com:nvedant07/deep-learning-base.git
+[submodule "llm/dolly"]
+	path = llm/dolly
+	url = git@github.com:databrickslabs/dolly.git
