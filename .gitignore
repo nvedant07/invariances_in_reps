@@ -170,5 +170,9 @@ git-filter-repo.py
 
 */__pycache__
 */.ipynb_checkpoints
-wandb
+wandb/
+*/wandb/
 */results
+lightning_logs/
+*/lightning_logs/
+linear/
