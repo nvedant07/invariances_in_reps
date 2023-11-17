@@ -75,10 +75,10 @@ def lightningmodule_callback(args):
 
 
 def setup_modified_linear_layer_kwargs(mode, dirpath, append, seed):
-    if 'pca' in mode:
+    if mode is not None and 'pca' in mode:
         sd = torch.load(f'{dirpath}/principal_components_{append}.pt', map_location='cpu')
         return {'projection_matrix': sd}
-    elif mode == 'randproj':
+    elif mode is not None and mode == 'randproj':
         generator = torch.Generator().manual_seed(seed)
         return {'generator': generator}
     else:

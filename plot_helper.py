@@ -16,7 +16,7 @@ RESULTS_FOLDER_NAME = 'results'
 
 COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
           '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
-          '#bcbd22', '#17becf']
+          '#bcbd22', '#17becf', '#7532a8']
 
 
 def get_wiki_link(figure_path, server_project_path, size=500):
@@ -29,14 +29,14 @@ def get_wiki_link(figure_path, server_project_path, size=500):
 def set_paper_friendly_params():
     plt.style.use('seaborn-paper')
     plt.rcParams['font.size'] = 24
-    plt.rcParams['axes.labelsize'] = 24
+    plt.rcParams['axes.labelsize'] = 32
     plt.rcParams['axes.labelweight'] = 'bold'
-    plt.rcParams['axes.titlesize'] = 15
+    plt.rcParams['axes.titlesize'] = 22
     plt.rcParams['axes.linewidth'] = 0.2
     plt.rcParams['axes.titleweight'] = 'bold'
-    plt.rcParams['xtick.labelsize'] = 20
-    plt.rcParams['ytick.labelsize'] = 20
-    plt.rcParams['legend.fontsize'] = 18
+    plt.rcParams['xtick.labelsize'] = 28
+    plt.rcParams['ytick.labelsize'] = 28
+    plt.rcParams['legend.fontsize'] = 20
     plt.rcParams['figure.titlesize'] = 25
     plt.rcParams['lines.linewidth'] = 4.0
     plt.rcParams['lines.markersize'] = 12

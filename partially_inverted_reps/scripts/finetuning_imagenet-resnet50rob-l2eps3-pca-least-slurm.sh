@@ -6,7 +6,7 @@
 #SBATCH -N 1                    # Ensure that all cores are on one machine
 #SBATCH --ntasks-per-node=1     
 #SBATCH -a 1-4
-#SBATCH -t 1-00:00              # Maximum run-time in D-HH:MM
+#SBATCH -t 4-00:00              # Maximum run-time in D-HH:MM
 #SBATCH --mem=100GB               # Memory pool for all cores (see also --mem-per-cpu)
 #SBATCH -o /NS/robustness_2/work/vnanda/invariances_in_reps/deep-learning-base/checkpoints/sbatch_logs/%x_%j.out      # File to which STDOUT will be written
 #SBATCH -e /NS/robustness_2/work/vnanda/invariances_in_reps/deep-learning-base/checkpoints/sbatch_logs/%x_%j.err      # File to which STDERR will be written
